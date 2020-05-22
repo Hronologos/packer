@@ -33,6 +33,7 @@ const ttf2woff = require('gulp-ttf2woff')
 const ttf2woff2 = require('gulp-ttf2woff2')
 const fonter = require('gulp-fonter');
 const pug = require('gulp-pug');
+const htmlmin = require('gulp-htmlmin');
 
 const project_foleder = 'dist';
 const source_folder = 'src';
@@ -50,7 +51,7 @@ const path = {
         html: source_folder + '/*.pug',
         css: source_folder + '/scss/style.scss',
         js: source_folder + '/js/script.js',
-        img: source_folder + '/img/**/*.{jpg, png, svg, gif, ico, webp}',
+        img: source_folder + '/img/**/*',
         fonts: source_folder + '/fonts/*.ttf',
     },
 
@@ -58,7 +59,7 @@ const path = {
         html: source_folder + '/**/*.pug',
         css: source_folder + '/scss/**/*.scss',
         js: source_folder + '/js/**/*.js',
-        img: source_folder + '/img/**/*.{jpg, png, svg, gif, ico, webp}',
+        img: source_folder + '/img/**/*',
     },
 
     clean: './' + project_foleder + '/',
@@ -78,9 +79,14 @@ function browserSync() {
 
 function html() {
     return src(path.src.html)
-        .pipe(pug({}))
+        .pipe(pug({
+            pretty: true
+        }))
         .pipe(fileInclude())
         .pipe(webpHTML())
+        .pipe(htmlmin({
+            collapseWhitespace: true
+        }))
         .pipe(dest(path.build.html))
         .pipe(browsersync.stream())
 }
@@ -89,7 +95,8 @@ function css() {
     return src(path.src.css)
         .pipe(webpCss())
         .pipe(scss({
-            outputStyle: "expanded"
+            outputStyle: "expanded",
+            includePaths: require('node-normalize-scss').includePaths
         }))
         .pipe(group_media())
         .pipe(autoprefixer({
